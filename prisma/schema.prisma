@@ -1,0 +1,51 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum LeadSource {
+  APIFY_GMAPS
+  MANUAL
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  DEMO_SCHEDULED
+  TRIAL_ACTIVE
+  CONVERTED
+  LOST
+}
+
+model Lead {
+  id             String      @id @default(cuid())
+  name           String
+  companyName    String?
+  cnpj           String?     @unique
+  phone          String      @unique
+  secondaryPhone String?
+  email          String?
+  address        String?
+  city           String?
+  state          String?
+  category       String
+  decisionMaker  String?
+  source         LeadSource  @default(APIFY_GMAPS)
+  status         LeadStatus  @default(NEW)
+  notes          String?
+  website        String?
+  rating         Float?
+  reviewsCount   Int?
+  googleMapsUrl  String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  @@index([phone])
+  @@index([status])
+  @@index([category])
+  @@index([createdAt])
+}
