@@ -228,9 +228,21 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
                           <div className="font-semibold text-slate-100 truncate group-hover:text-emerald-300 transition-colors flex items-center gap-1.5">
                             <span className="truncate">{lead.name}</span>
                             {lead.rating && (
-                              <span className="inline-flex items-center text-[10px] text-amber-400 font-normal">
+                              <span
+                                className="inline-flex items-center text-[10px] text-amber-400 font-normal flex-shrink-0"
+                                title={
+                                  lead.reviewsCount != null
+                                    ? `${lead.reviewsCount.toLocaleString('pt-BR')} avaliações no Google Maps`
+                                    : undefined
+                                }
+                              >
                                 <Star className="w-2.5 h-2.5 fill-amber-400 mr-0.5" />
                                 {lead.rating}
+                                {lead.reviewsCount != null && (
+                                  <span className="text-slate-500 ml-1 font-normal">
+                                    ({lead.reviewsCount.toLocaleString('pt-BR')})
+                                  </span>
+                                )}
                               </span>
                             )}
                           </div>
