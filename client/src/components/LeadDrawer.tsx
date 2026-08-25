@@ -18,10 +18,39 @@ import {
   ShieldCheck,
   Briefcase,
   Mail,
-  PhoneCall
+  PhoneCall,
+  Copy,
+  Check
 } from 'lucide-react';
 import { Lead, LeadStatus, STATUS_CONFIG, EnrichedData, BrasilApiQSA } from '../types/lead';
 import { api } from '../services/api';
+
+function formatLeadForClipboard(lead: Lead, notes: string, status: LeadStatus): string {
+  const ratingLine =
+    lead.rating != null
+      ? `Avaliação: ${lead.rating} (${(lead.reviewsCount ?? 0).toLocaleString('pt-BR')} avaliações)`
+      : null;
+
+  const lines = [
+    `Nome: ${lead.name}`,
+    `Categoria: ${lead.category}`,
+    lead.city ? `Cidade: ${lead.city}` : null,
+    `Telefone: ${lead.phone}`,
+    lead.secondaryPhone ? `Telefone 2: ${lead.secondaryPhone}` : null,
+    lead.email ? `E-mail: ${lead.email}` : null,
+    lead.companyName ? `Razão social: ${lead.companyName}` : null,
+    lead.cnpj ? `CNPJ: ${lead.cnpj}` : null,
+    lead.decisionMaker ? `Decisor: ${lead.decisionMaker}` : null,
+    ratingLine,
+    lead.address ? `Endereço: ${lead.address}` : null,
+    lead.website ? `Site: ${lead.website}` : null,
+    lead.googleMapsUrl ? `Maps: ${lead.googleMapsUrl}` : null,
+    `Status: ${STATUS_CONFIG[status].label}`,
+    notes.trim() ? `Observações: ${notes.trim()}` : null
+  ];
+
+  return lines.filter((line): line is string => Boolean(line)).join('\n');
+}
 
 interface LeadDrawerProps {
   isOpen: boolean;
@@ -45,6 +74,7 @@ export const LeadDrawer: React.FC<LeadDrawerProps> = ({
   const [isSavingNotes, setIsSavingNotes] = useState(false);
   const [enrichResult, setEnrichResult] = useState<EnrichedData | null>(null);
   const [enrichError, setEnrichError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (lead) {
@@ -53,6 +83,7 @@ export const LeadDrawer: React.FC<LeadDrawerProps> = ({
       setStatus(lead.status);
       setEnrichResult(null);
       setEnrichError(null);
+      setCopied(false);
     }
   }, [lead]);
 
@@ -92,6 +123,16 @@ export const LeadDrawer: React.FC<LeadDrawerProps> = ({
       console.error('Erro ao salvar:', err);
     } finally {
       setIsSavingNotes(false);
+    }
+  };
+
+  const handleCopyLeadInfo = async () => {
+    try {
+      await navigator.clipboard.writeText(formatLeadForClipboard(lead, notes, status));
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setCopied(false);
     }
   };
 
@@ -169,9 +210,20 @@ export const LeadDrawer: React.FC<LeadDrawerProps> = ({
 
             {/* General Info Grid */}
             <div className="space-y-3">
-              <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-                <Briefcase className="w-3.5 h-3.5 text-emerald-400" /> Informações do Estabelecimento
-              </h3>
+              <div className="flex items-center justify-between gap-2">
+                <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                  <Briefcase className="w-3.5 h-3.5 text-emerald-400" /> Informações do Estabelecimento
+                </h3>
+                <button
+                  type="button"
+                  onClick={handleCopyLeadInfo}
+                  className="text-xs text-emerald-400 hover:text-emerald-300 font-semibold flex items-center gap-1 transition-colors"
+                  title="Copiar todas as informações do lead"
+                >
+                  {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                  <span>{copied ? 'Copiado' : 'Copiar informações'}</span>
+                </button>
+              </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
                 {/* Phone */}
