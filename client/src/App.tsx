@@ -4,6 +4,7 @@ import { StatsOverview } from './components/StatsOverview';
 import { QuickScrapeBar } from './components/QuickScrapeBar';
 import { LeadsTable } from './components/LeadsTable';
 import { LeadsKanban } from './components/LeadsKanban';
+import { LeadsToolbar } from './components/LeadsToolbar';
 import { WhatsAppModal } from './components/WhatsAppModal';
 import { LeadDrawer } from './components/LeadDrawer';
 import { NewLeadModal } from './components/NewLeadModal';
@@ -279,18 +280,14 @@ export const App: React.FC = () => {
         />
 
         {/* Leads Table or Kanban */}
-        {viewMode === 'table' ? (
-          <LeadsTable
-            leads={leads}
-            pagination={pagination}
+        <div className="glass-panel rounded-2xl border border-slate-800 shadow-xl overflow-hidden">
+          <LeadsToolbar
             counts={counts}
             categories={categories}
-            loading={loading}
             selectedStatus={selectedStatus}
             selectedCategory={selectedCategory}
             searchQuery={searchQuery}
             viewMode={viewMode}
-            onStatusChange={handleStatusChange}
             onFilterStatus={(st) => {
               setSelectedStatus(st);
               setPage(1);
@@ -303,20 +300,30 @@ export const App: React.FC = () => {
               setSearchQuery(q);
               setPage(1);
             }}
-            onPageChange={setPage}
             onToggleViewMode={setViewMode}
-            onOpenWhatsApp={handleOpenWhatsApp}
-            onOpenDrawer={handleOpenDrawer}
-            onDeleteLead={handleDeleteLead}
           />
-        ) : (
-          <LeadsKanban
-            leads={leads}
-            onStatusChange={handleStatusChange}
-            onOpenWhatsApp={handleOpenWhatsApp}
-            onOpenDrawer={handleOpenDrawer}
-          />
-        )}
+          {viewMode === 'table' ? (
+            <LeadsTable
+              leads={leads}
+              pagination={pagination}
+              loading={loading}
+              onStatusChange={handleStatusChange}
+              onPageChange={setPage}
+              onOpenWhatsApp={handleOpenWhatsApp}
+              onOpenDrawer={handleOpenDrawer}
+              onDeleteLead={handleDeleteLead}
+            />
+          ) : (
+            <div className="p-3">
+              <LeadsKanban
+                leads={leads}
+                onStatusChange={handleStatusChange}
+                onOpenWhatsApp={handleOpenWhatsApp}
+                onOpenDrawer={handleOpenDrawer}
+              />
+            </div>
+          )}
+        </div>
       </main>
 
       {/* Modals & Drawers */}

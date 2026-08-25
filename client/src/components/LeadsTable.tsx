@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import {
-  Search,
-  Filter,
   Phone,
   Send,
   MoreHorizontal,
@@ -16,28 +14,16 @@ import {
   Copy,
   Check,
   Star,
-  Users,
-  LayoutGrid,
-  List
+  Users
 } from 'lucide-react';
-import { Lead, LeadStatus, STATUS_CONFIG, LeadsCounts, Pagination, getWebsiteType } from '../types/lead';
+import { Lead, LeadStatus, STATUS_CONFIG, Pagination, getWebsiteType } from '../types/lead';
 
 interface LeadsTableProps {
   leads: Lead[];
   pagination: Pagination;
-  counts: LeadsCounts;
-  categories: { name: string; count: number }[];
   loading: boolean;
-  selectedStatus: string;
-  selectedCategory: string;
-  searchQuery: string;
-  viewMode: 'table' | 'kanban';
   onStatusChange: (leadId: string, newStatus: LeadStatus) => void;
-  onFilterStatus: (status: string) => void;
-  onFilterCategory: (category: string) => void;
-  onSearch: (query: string) => void;
   onPageChange: (page: number) => void;
-  onToggleViewMode: (mode: 'table' | 'kanban') => void;
   onOpenWhatsApp: (lead: Lead) => void;
   onOpenDrawer: (lead: Lead) => void;
   onDeleteLead: (leadId: string) => void;
@@ -46,19 +32,9 @@ interface LeadsTableProps {
 export const LeadsTable: React.FC<LeadsTableProps> = ({
   leads,
   pagination,
-  counts,
-  categories,
   loading,
-  selectedStatus,
-  selectedCategory,
-  searchQuery,
-  viewMode,
   onStatusChange,
-  onFilterStatus,
-  onFilterCategory,
-  onSearch,
   onPageChange,
-  onToggleViewMode,
   onOpenWhatsApp,
   onOpenDrawer,
   onDeleteLead
@@ -72,106 +48,8 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
     setTimeout(() => setCopiedPhoneId(null), 2000);
   };
 
-  const statusTabs = [
-    { key: 'ALL', label: 'Todos', count: counts.total },
-    { key: 'NEW', label: 'Novos', count: counts.NEW },
-    { key: 'CONTACTED', label: 'Contatados', count: counts.CONTACTED },
-    { key: 'DEMO_SCHEDULED', label: 'Demo Agendada', count: counts.DEMO_SCHEDULED },
-    { key: 'TRIAL_ACTIVE', label: 'Em Teste', count: counts.TRIAL_ACTIVE },
-    { key: 'CONVERTED', label: 'Convertidos', count: counts.CONVERTED },
-    { key: 'LOST', label: 'Perdidos', count: counts.LOST }
-  ];
-
   return (
-    <div className="glass-panel rounded-2xl border border-slate-800 shadow-xl overflow-hidden">
-      {/* Table Control Header */}
-      <div className="p-4 border-b border-slate-800/80 bg-slate-900/60 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-        {/* Status Tabs */}
-        <div className="flex items-center space-x-1 overflow-x-auto pb-1 lg:pb-0 scrollbar-none">
-          {statusTabs.map((tab) => {
-            const isActive = selectedStatus === tab.key;
-            return (
-              <button
-                key={tab.key}
-                type="button"
-                onClick={() => onFilterStatus(tab.key)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all flex items-center space-x-1.5 ${
-                  isActive
-                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/80 border border-transparent'
-                }`}
-              >
-                <span>{tab.label}</span>
-                <span
-                  className={`text-[10px] px-1.5 py-0.2 rounded-full ${
-                    isActive ? 'bg-emerald-500/30 text-emerald-200' : 'bg-slate-800 text-slate-400'
-                  }`}
-                >
-                  {tab.count}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Search, Category Filter & View Mode Switcher */}
-        <div className="flex items-center space-x-2 flex-wrap sm:flex-nowrap">
-          {/* Live Search */}
-          <div className="relative flex-1 sm:w-64">
-            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => onSearch(e.target.value)}
-              placeholder="Buscar por nome, sócio, telefone..."
-              className="w-full pl-8 pr-3 py-1.5 bg-slate-950/80 border border-slate-700/70 rounded-xl text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500"
-            />
-          </div>
-
-          {/* Category Dropdown */}
-          <div className="relative">
-            <select
-              value={selectedCategory}
-              onChange={(e) => onFilterCategory(e.target.value)}
-              className="px-3 py-1.5 bg-slate-950/80 border border-slate-700/70 rounded-xl text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500"
-            >
-              <option value="ALL">Todas Categorias</option>
-              {categories.map((c) => (
-                <option key={c.name} value={c.name}>
-                  {c.name} ({c.count})
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* View Toggle */}
-          <div className="flex items-center bg-slate-950/80 p-0.5 rounded-xl border border-slate-800">
-            <button
-              onClick={() => onToggleViewMode('table')}
-              className={`p-1.5 rounded-lg transition-colors ${
-                viewMode === 'table'
-                  ? 'bg-emerald-600 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
-              title="Visualização em Tabela"
-            >
-              <List className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={() => onToggleViewMode('kanban')}
-              className={`p-1.5 rounded-lg transition-colors ${
-                viewMode === 'kanban'
-                  ? 'bg-emerald-600 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
-              title="Visualização em Kanban / Funil"
-            >
-              <LayoutGrid className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
-      </div>
-
+    <>
       {/* Table Content */}
       <div className="overflow-x-auto">
         <table className="w-full text-left text-xs border-collapse">
@@ -436,6 +314,6 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
           </button>
         </div>
       </div>
-    </div>
+    </>
   );
 };
