@@ -87,6 +87,17 @@ export const LeadDrawer: React.FC<LeadDrawerProps> = ({
     }
   }, [lead]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen || !lead) return null;
 
   const handleEnrich = async () => {
@@ -149,9 +160,18 @@ export const LeadDrawer: React.FC<LeadDrawerProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden bg-black/60 backdrop-blur-sm animate-fadeIn">
+    <div
+      className="fixed inset-0 z-50 overflow-hidden bg-black/60 backdrop-blur-sm animate-fadeIn"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="lead-drawer-title"
+      onClick={onClose}
+    >
       <div className="absolute inset-y-0 right-0 max-w-full flex pl-10">
-        <div className="w-screen max-w-xl bg-[#0d1322] border-l border-slate-800 shadow-2xl flex flex-col">
+        <div
+          className="w-screen max-w-xl bg-[#0d1322] border-l border-slate-800 shadow-2xl flex flex-col"
+          onClick={(e) => e.stopPropagation()}
+        >
           {/* Header */}
           <div className="p-5 border-b border-slate-800 bg-[#090d16] flex items-center justify-between">
             <div className="flex items-center space-x-3">
@@ -159,7 +179,10 @@ export const LeadDrawer: React.FC<LeadDrawerProps> = ({
                 <Building className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="text-base font-bold text-white tracking-tight leading-tight">
+                <h2
+                  id="lead-drawer-title"
+                  className="text-base font-bold text-white tracking-tight leading-tight"
+                >
                   {lead.name}
                 </h2>
                 <div className="flex items-center space-x-2 mt-0.5">
@@ -171,8 +194,10 @@ export const LeadDrawer: React.FC<LeadDrawerProps> = ({
             </div>
 
             <button
+              type="button"
               onClick={onClose}
               className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+              aria-label="Fechar painel do lead"
             >
               <X className="w-5 h-5" />
             </button>
@@ -467,6 +492,7 @@ export const LeadDrawer: React.FC<LeadDrawerProps> = ({
               ID: {lead.id} • Criado em {new Date(lead.createdAt).toLocaleDateString('pt-BR')}
             </span>
             <button
+              type="button"
               onClick={onClose}
               className="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors"
             >
